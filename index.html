@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaktik Silah Atölyesi - Gerçek Sistem V2</title>
+    <style>
+        /* --- TEMEL CSS (Öncekilerle aynı) --- */
+        :root { --bg-dark: #0a0a0f; --bg-panel: #14141c; --text-light: #e0e0e0; --accent-gold: #c7a008; --nav-height: 60px; --blade-color: #0088ff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding-top: var(--nav-height); display: flex; flex-direction: column; }
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(20, 20, 28, 0.95); border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 100; backdrop-filter: blur(10px); }
+        .brand { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 1px;}
+        .nav-links { list-style: none; display: flex; gap: 20px; }
+        .nav-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1rem; padding: 8px 12px; transition: color 0.3s; border-radius: 4px; }
+        .nav-btn:hover, .nav-btn.active { color: var(--accent-gold); }
+        .cart-badge { background: var(--accent-gold); color: #000; padding: 2px 6px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; margin-left: 5px;}
+        .view-section { display: none; padding: 30px 20px; max-width: 1200px; margin: 0 auto; flex-grow: 1; width: 100%; }
+        .view-section.active-view { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hidden { display: none !important; }
+        .hero-banner { text-align: center; padding: 100px 20px; background: radial-gradient(circle at center, #1a1a2e 0%, var(--bg-dark) 80%); }
+        .hero-title { font-size: 3rem; color: var(--accent-gold); margin-bottom: 20px; }
+        .hero-subtitle { font-size: 1.2rem; color: #aaa; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;}
+        .cta-btn { padding: 15px 40px; font-size: 1.2rem; background: var(--accent-gold); color: #000; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; transition: transform 0.2s, box-shadow 0.2s; }
+        .cta-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(199, 160, 8, 0.5); }
+        
+        /* --- ATÖLYE & 3D CSS (Öncekilerle aynı) --- */
+        .workshop-layout { display: grid; grid-template-columns: 1fr 400px; gap: 30px; align-items: start; }
+        .workshop-preview { background: radial-gradient(circle at center, #2c3e50 0%, #000 80%); border-radius: 12px; min-height: 600px; display: flex; justify-content: center; align-items: center; border: 3px solid #333; position: relative; overflow: hidden; box-shadow: inset 0 0 50px #000; }
+        .saber-container { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; transform: rotate(-90deg); }
+        .panel { background: var(--bg-panel); padding: 25px; border-radius: 12px; border: 1px solid #333; max-height: 80vh; overflow-y: auto; }
+        .panel h3 { color: var(--accent-gold); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; position: sticky; top: 0; background: var(--bg-panel); z-index: 10;}
+        .part-category-title { font-size: 1rem; color: #fff; margin: 20px 0 10px 0; border-bottom: 1px dashed #555; padding-bottom: 5px; }
+        .option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .color-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; cursor: pointer; transition: transform 0.2s; }
+        .color-btn.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+        .part-btn { padding: 10px; background: #222; color: #aaa; border: 1px solid #444; border-radius: 6px; cursor: pointer; width: 100%; text-align: left; font-size: 0.9rem; display: flex; justify-content: space-between; transition: all 0.2s;}
+        .part-btn:hover { background: #333; }
+        .part-btn.active { background: var(--accent-gold); color: #000; font-weight: bold; border-color: var(--accent-gold); }
+        .workshop-actions { margin-top: 30px; pt: 20px; border-top: 1px solid #444; text-align: center; position: sticky; bottom: 0; background: var(--bg-panel); padding-bottom: 10px;}
+        .price-display { font-size: 2rem; color: var(--accent-gold); font-weight: bold; display: block; margin: 15px 0; }
+        .action-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s; margin-bottom: 10px;}
+        .btn-primary { background: var(--accent-gold); color: #000; }
+        .btn-primary:hover { background: #d4af15; box-shadow: 0 0 15px rgba(199, 160, 8, 0.4); }
+        .btn-secondary { background: #333; color: #fff; }
+        .blade { width: 16px; height: 0; background: white; border-radius: 10px 10px 2px 2px; position: relative; top: 5px; transition: height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease; z-index: 1; opacity: 0.8;}
+        .saber-container.active .blade { height: 450px; opacity: 1; box-shadow: 0 0 10px #fff, 0 0 30px var(--blade-color), 0 0 80px var(--blade-color), 0 0 120px var(--blade-color); }
+        .handle-assembly { display: flex; flex-direction: column; align-items: center; z-index: 10; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+        .hilt-part { width: 40px; position: relative; box-shadow: inset 0 5px 10px rgba(0,0,0,0.4), inset 0 -5px 10px rgba(0,0,0,0.4); transition: all 0.3s ease;}
+        .tex-chrome { background: linear-gradient(to right, #555, #fff 40%, #ccc 60%, #555); }
+        .tex-dark-metal { background: linear-gradient(to right, #111, #444 40%, #333 60%, #000); }
+        .tex-gold { background: linear-gradient(to right, #9A7B4F, #FFD700 40%, #E6C200 60%, #9A7B4F); }
+        .tex-copper { background: linear-gradient(to right, #6d4c41, #d7ccc8 40%, #bcaaa4 60%, #6d4c41); }
+        .tex-leather { background: repeating-linear-gradient(to bottom, #5d4037, #4e342e 5px, #3e2723 10px); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .tex-rubber { background: repeating-linear-gradient(to bottom, #212121, #151515 8px, #000 8px, #000 10px); }
+        .emitter-graflex { height: 45px; border-radius: 5px 5px 0 0; border-top: 4px solid #222; }
+        .emitter-graflex::after { content:''; position:absolute; top:-5px; left:50%; transform:translateX(-50%); width:25px; height:5px; background: var(--accent-gold); border-radius: 50%; }
+        .emitter-obi { height: 30px; border-radius: 50% 50% 0 0; width: 36px; margin-bottom: 5px;}
+        .emitter-obi-neck { height: 40px; width: 18px; margin: -5px auto 0 auto; border-top: 3px solid #000; border-bottom: 3px solid #000; z-index: 12;}
+        .emitter-vader { height: 50px; border-radius: 2px; clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 100%); }
+        .emitter-crown { height: 40px; }
+        .emitter-crown::before { content:''; position: absolute; width: 100%; height: 100%; background: repeating-linear-gradient(to right, transparent 0, transparent 8px, #000 8px, #000 10px); }
+        .switch-clamp { height: 50px; z-index: 11; }
+        .switch-clamp::before { content:''; position:absolute; top:50%; transform:translateY(-50%); left:-2px; width: 44px; height: 20px; background: rgba(0,0,0,0.5); border: 1px solid #fff; }
+        .switch-box-red { height: 45px; }
+        .switch-box-red::after { content:''; position:absolute; top:10px; right:-4px; width:12px; height:25px; background:#c0392b; border:2px solid #000; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);}
+        .switch-plates { height: 60px; background-image: linear-gradient(to bottom, transparent 45%, #000 45%, #000 55%, transparent 55%); background-size: 100% 10px;}
+        .switch-minimal { height: 40px; }
+        .switch-minimal::after { content:''; position: absolute; width: 15px; height: 15px; background: var(--accent-gold); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #000; box-shadow: 0 0 10px var(--accent-gold);}
+        .grip-rubber-fins { height: 100px; border-top: 3px solid #111; border-bottom: 3px solid #111; }
+        .grip-leather-wrap { height: 110px; border-radius: 5px; }
+        .grip-metal-rings { height: 90px; background: repeating-linear-gradient(to bottom, #333 0, #333 15px, #111 15px, #111 18px); }
+        .grip-smooth { height: 100px; }
+        .grip-smooth::after { content:'Galactic Forge'; position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 0.6rem; color: rgba(255,255,255,0.3); letter-spacing: 2px; transform: rotate(-90deg); }
+        .pommel-cap { height: 25px; border-radius: 0 0 10px 10px; border-top: 3px solid #222; }
+        .pommel-skull-crusher { height: 35px; border-radius: 0 0 50% 50%; position: relative; }
+        .pommel-skull-crusher::after { content:''; position:absolute; bottom:-5px; left:50%; transform:translateX(-50%); width:10px; height:10px; background:#111; border-radius:50%; border:2px solid #555; }
+        .pommel-flat { height: 15px; border-top: 2px solid #000; }
+        .pommel-spiked { height: 40px; clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%); transform: rotate(180deg); border-bottom: none !important;}
+
+        .cart-container, .admin-container, .login-container { background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid #333; max-width: 800px; margin: 0 auto;}
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th { text-align: left; padding: 15px; border-bottom: 2px solid #333; color: var(--accent-gold); }
+        .data-table td { padding: 15px; border-bottom: 1px solid #333; vertical-align: top;}
+        .cart-summary { margin-top: 30px; text-align: right; }
+        .cart-total-price { color: var(--accent-gold); font-weight: bold; font-size: 2rem; }
+        .delete-item-btn { background: #c0392b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;}
+        .empty-msg { text-align: center; padding: 50px; font-size: 1.2rem; color: #aaa; font-style: italic;}
+        .site-footer { margin-top: auto; padding: 20px; text-align: center; border-top: 1px solid #333; font-size: 0.9rem; color: #666; }
+        .admin-link { color: #333; text-decoration: none; cursor: pointer; transition: color 0.3s;}
+        .admin-link:hover { color: var(--accent-gold); }
+        .login-form { display: flex; flex-direction: column; gap: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--accent-gold); }
+        .form-group input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; }
+        .login-msg { margin-top: 15px; text-align: center; font-weight: bold; }
+        .success { color: #2ecc71; } .error { color: #e74c3c; }
+
+        /* --- YENİ CSS: DURUM ETİKETLERİ VE BUTONLARI --- */
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; display: inline-block; margin-top: 5px;}
+        .status-hazirlaniyor { background: #f39c12; color: #fff; }
+        .status-teslim { background: #2ecc71; color: #fff; }
+        .status-iptal { background: #e74c3c; color: #fff; }
+        .status-gecikme { background: #9b59b6; color: #fff; }
+        
+        .admin-actions-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+        .admin-action-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: white; transition: opacity 0.2s; }
+        .admin-action-btn:hover { opacity: 0.8; }
+        .btn-teslim { background: #27ae60; }
+        .btn-iptal { background: #c0392b; }
+        .btn-gecikme { background: #8e44ad; }
+
+        @media (max-width: 900px) { .workshop-layout { grid-template-columns: 1fr; } .saber-container { transform: rotate(0deg) scale(0.8); margin: 50px 0;} }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="brand">Galaktik Atölye</div>
+    <ul class="nav-links">
+        <li><button class="nav-btn active" onclick="navigateTo('home')">Ana Sayfa</button></li>
+        <li><button class="nav-btn" onclick="navigateTo('workshop')">Atölye</button></li>
+        <li><button class="nav-btn" onclick="navigateTo('cart')">Sepetim <span class="cart-badge" id="navCartCount">0</span></button></li>
+        <li><button class="nav-btn" onclick="navigateTo('notifications')">Sipariş Takibi</button></li>
+    </ul>
+</nav>
+
+<section id="home-view" class="view-section active-view">
+    <div class="hero-banner">
+        <h1 class="hero-title">Gerçek Gücü Hisset</h1>
+        <p class="hero-subtitle">Siparişleriniz artık doğrudan galaktik sunucularımıza iletiliyor. Efsaneni yarat ve savaşa katıl.</p>
+        <button class="cta-btn" onclick="navigateTo('workshop')">Atölyeye Gir</button>
+    </div>
+</section>
+
+<section id="workshop-view" class="view-section">
+    <div class="workshop-layout">
+        <div class="workshop-preview">
+            <div class="saber-container" id="saberContainer">
+                <div class="blade" id="saberBlade"></div>
+                <div class="handle-assembly" id="saberAssembly"></div>
+            </div>
+        </div>
+        <div class="panel controls">
+            <h3>Kılıç Konfigürasyonu</h3>
+            <div class="part-category-title">Güç Kristali (Renk)</div>
+            <div class="option-grid" id="colorOptions"></div>
+            <div class="part-category-title">1. Üst Kapak (Emitter)</div>
+            <div class="option-grid" style="grid-template-columns: 1fr 1fr;" id="emitterOptions"></div>
+            <div class="part-category-title">2. Ana Gövde (Switch)</div>
+            <div class="option-grid" style="grid-template-columns: 1fr 1fr;" id="switchOptions"></div>
+            <div class="part-category-title">3. Tutma Yeri (Grip)</div>
+            <div class="option-grid" style="grid-template-columns: 1fr 1fr;" id="gripOptions"></div>
+            <div class="part-category-title">4. Alt Kapak (Pommel)</div>
+            <div class="option-grid" style="grid-template-columns: 1fr 1fr;" id="pommelOptions"></div>
+            <div class="workshop-actions">
+                <button class="action-btn btn-secondary" id="testBtn">Kılıcı Test Et (Aç/Kapat)</button>
+                <span class="price-display" id="workshopPrice">0 ₺</span>
+                <button class="action-btn btn-primary" id="addToCartBtn">🛒 Sepete Ekle</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="cart-view" class="view-section">
+    <h2 style="margin-bottom: 30px; color: var(--accent-gold);">Sepetiniz</h2>
+    <div class="cart-container">
+        <div style="margin-bottom: 20px;">
+             <label style="color: #aaa;">Sipariş E-posta Adresi (Takip için gereklidir):</label>
+             <input type="email" id="customerEmail" placeholder="ornek@mail.com" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; margin-top: 5px;">
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Ürün Özeti</th><th>Fiyat</th><th>İşlem</th></tr></thead>
+            <tbody id="fullCartList"></tbody>
+        </table>
+        <div class="cart-summary hidden" id="cartSummarySection">
+            <div style="font-size: 1.5rem; margin-bottom: 20px;">Toplam Tutar: <span class="cart-total-price" id="fullCartTotal">0 ₺</span></div>
+            <button class="cta-btn" onclick="submitOrderToServer()">Siparişi Sunucuya Gönder</button>
+        </div>
+    </div>
+</section>
+
+<section id="notifications-view" class="view-section">
+    <div class="cart-container">
+        <h2 style="color: var(--accent-gold); margin-bottom: 20px;">Sipariş Takibi</h2>
+        <p style="color: #aaa; margin-bottom: 15px;">Sipariş verirken kullandığınız e-posta adresini girerek geçmiş siparişlerinizin durumunu sorgulayabilirsiniz.</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+            <input type="email" id="trackEmailInput" placeholder="E-posta adresiniz..." style="flex-grow: 1; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 6px;">
+            <button class="action-btn btn-primary" style="width: auto; margin: 0;" onclick="fetchUserNotifications()">Sorgula</button>
+        </div>
+
+        <table class="data-table">
+            <thead><tr><th>Sipariş No & Tarih</th><th>İçerik</th><th>Durum</th></tr></thead>
+            <tbody id="notificationList">
+                <tr><td colspan="3" class="empty-msg">Henüz sorgulama yapılmadı.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="login-view" class="view-section">
+    <div class="login-container">
+        <h2 style="text-align: center; color: var(--accent-gold); margin-bottom: 30px;">Yönetici Girişi</h2>
+        <div class="login-form">
+            <div class="form-group">
+                <label for="adminEmail">E-posta Adresi</label>
+                <input type="email" id="adminEmail" value="admin@galaktik.com">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Şifre</label>
+                <input type="password" id="adminPassword" placeholder="••••••">
+            </div>
+            <button class="cta-btn" onclick="loginToServer()">Giriş Yap</button>
+            <div class="login-msg" id="loginMessage"></div>
+        </div>
+    </div>
+</section>
+
+<section id="admin-view" class="view-section">
+     <h2 style="margin-bottom: 30px; color: var(--accent-gold);">Sunucu Paneli - Sipariş Yönetimi</h2>
+     <div class="admin-container">
+         <button class="action-btn btn-secondary" onclick="fetchAdminOrders()" style="width: auto; margin-bottom: 20px;">Siparişleri Yenile</button>
+         <table class="data-table">
+             <thead><tr><th>ID / Müşteri</th><th>Konfigürasyon</th><th>Tutar & Durum</th><th>İşlemler</th></tr></thead>
+             <tbody id="adminOrderList"><tr style="display: contents;"><td colspan="4" class="empty-msg">Veri bekleniyor...</td></tr></tbody>
+         </table>
+     </div>
+</section>
+
+<footer class="site-footer">
+    <p>&copy; 2023 Galaktik Silah Atölyesi. Gerçek Sunucu Sistemleri V2.</p>
+    <span class="admin-link" onclick="checkAdminAccess()">Yönetici Girişi</span>
+</footer>
+
+<script>
+    const API_URL = "http://localhost:3000/api";
+    let authToken = localStorage.getItem('adminToken');
+
+    const partsData = {
+        colors: [ { id: 'c1', name: 'Saf Mavi', hex: '#0088ff', price: 500 }, { id: 'c2', name: 'Zümrüt Yeşili', hex: '#2ecc71', price: 600 }, { id: 'c3', name: 'Kan Kırmızısı', hex: '#e74c3c', price: 450 }, { id: 'c4', name: 'Ametist Moru', hex: '#9b59b6', price: 750 }, { id: 'c5', name: 'Altın Sarısı', hex: '#f1c40f', price: 700 } ],
+        emitters: [ { id: 'e1', name: 'Graflex Tip (Krom)', price: 700, css: 'emitter-graflex tex-chrome' }, { id: 'e2', name: 'Obi-Wan Boyunlu (Bakır)', price: 700, css: 'emitter-obi tex-copper', hasNeck: true }, { id: 'e3', name: 'Vader Başlığı (Siyah)', price: 700, css: 'emitter-vader tex-dark-metal' }, { id: 'e4', name: 'Kraliyet Tacı (Altın)', price: 700, css: 'emitter-crown tex-gold' } ],
+        switches: [ { id: 's1', name: 'Kelepçe Tipi (Krom)', price: 5000, css: 'switch-clamp tex-chrome' }, { id: 's2', name: 'Kırmızı Düğmeli Kutu', price: 5000, css: 'switch-box-red tex-chrome' }, { id: 's3', name: 'Plakalı Gövde (Siyah)', price: 5000, css: 'switch-plates tex-dark-metal' }, { id: 's4', name: 'Minimalist Altın Tuş', price: 5000, css: 'switch-minimal tex-gold' } ],
+        grips: [ { id: 'g1', name: 'Kauçuk Kanatlar (T-Rex)', price: 300, css: 'grip-rubber-fins tex-rubber' }, { id: 'g2', name: 'Gerçek Deri Sargı (Kahve)', price: 300, css: 'grip-leather-wrap tex-leather' }, { id: 'g3', name: 'Metal Halkalı (Siyah)', price: 300, css: 'grip-metal-rings tex-dark-metal' }, { id: 'g4', name: 'Pürüzsüz Krom Silindir', price: 350, css: 'grip-smooth tex-chrome' } ],
+        pommels: [ { id: 'p1', name: 'Standart Kapak (Krom)', price: 200, css: 'pommel-cap tex-chrome' }, { id: 'p2', name: 'Kafatası Kırıcı (Bakır)', price: 200, css: 'pommel-skull-crusher tex-copper' }, { id: 'p3', name: 'Düz Kapak (Siyah)', price: 200, css: 'pommel-flat tex-dark-metal' }, { id: 'p4', name: 'Çivili Uç (Altın)', price: 400, css: 'pommel-spiked tex-gold' } ]
+    };
+    let appState = { currentView: 'home', workshop: { color: partsData.colors[0], emitter: partsData.emitters[0], switchPart: partsData.switches[0], grip: partsData.grips[0], pommel: partsData.pommels[0], isSaberOn: false }, cart: [] };
+
+    const DOM = {
+        views: { home: document.getElementById('home-view'), workshop: document.getElementById('workshop-view'), cart: document.getElementById('cart-view'), login: document.getElementById('login-view'), admin: document.getElementById('admin-view'), notifications: document.getElementById('notifications-view') },
+        navBtns: document.querySelectorAll('.nav-btn'), navCartCount: document.getElementById('navCartCount'),
+        saber: { container: document.getElementById('saberContainer'), assembly: document.getElementById('saberAssembly') },
+        wsCtrl: { colors: document.getElementById('colorOptions'), emitters: document.getElementById('emitterOptions'), switches: document.getElementById('switchOptions'), grips: document.getElementById('gripOptions'), pommels: document.getElementById('pommelOptions'), price: document.getElementById('workshopPrice'), testBtn: document.getElementById('testBtn'), addBtn: document.getElementById('addToCartBtn') },
+        cart: { list: document.getElementById('fullCartList'), total: document.getElementById('fullCartTotal'), summary: document.getElementById('cartSummarySection'), emailInput: document.getElementById('customerEmail') },
+        login: { email: document.getElementById('adminEmail'), pass: document.getElementById('adminPassword'), msg: document.getElementById('loginMessage') },
+        admin: { list: document.getElementById('adminOrderList') },
+        notif: { emailInput: document.getElementById('trackEmailInput'), list: document.getElementById('notificationList') }
+    };
+
+    /* --- FONKSİYONLAR --- */
+    function navigateTo(viewName) {
+        Object.values(DOM.views).forEach(v => v.classList.remove('active-view')); DOM.navBtns.forEach(b => b.classList.remove('active'));
+        DOM.views[viewName].classList.add('active-view');
+        if(viewName === 'cart') renderCartPage();
+        // Navigasyon butonunu aktif yap
+        const btnIdx = ['home', 'workshop', 'cart', 'notifications'].indexOf(viewName); 
+        if (btnIdx >= 0 && DOM.navBtns[btnIdx]) DOM.navBtns[btnIdx].classList.add('active');
+        appState.currentView = viewName;
+    }
+
+    function initWorkshopUI() {
+        partsData.colors.forEach(c => { const btn = document.createElement('div'); btn.className = 'color-btn'; btn.style.background = c.hex; btn.onclick = () => { appState.workshop.color = c; updateWorkshop(); }; DOM.wsCtrl.colors.appendChild(btn); });
+        const createPartBtns = (dataArray, container, stateKey) => { dataArray.forEach(part => { const btn = document.createElement('button'); btn.className = 'part-btn'; btn.innerHTML = `${part.name} <span>${part.price} ₺</span>`; btn.onclick = () => { appState.workshop[stateKey] = part; updateWorkshop(); }; container.appendChild(btn); }); };
+        createPartBtns(partsData.emitters, DOM.wsCtrl.emitters, 'emitter'); createPartBtns(partsData.switches, DOM.wsCtrl.switches, 'switchPart'); createPartBtns(partsData.grips, DOM.wsCtrl.grips, 'grip'); createPartBtns(partsData.pommels, DOM.wsCtrl.pommels, 'pommel');
+        updateWorkshop();
+    }
+
+    function updateWorkshop() {
+        const st = appState.workshop;
+        document.documentElement.style.setProperty('--blade-color', st.color.hex);
+        DOM.saber.assembly.innerHTML = '';
+        const addPart = (partData, extraClass = '') => { const div = document.createElement('div'); div.className = `hilt-part ${partData.css} ${extraClass}`; DOM.saber.assembly.appendChild(div); }
+        addPart(st.emitter); if(st.emitter.hasNeck) addPart({css: 'emitter-obi-neck tex-copper'}, 'no-shadow');
+        addPart(st.switchPart); addPart(st.grip); addPart(st.pommel);
+        const totalPrice = st.color.price + st.emitter.price + st.switchPart.price + st.grip.price + st.pommel.price;
+        DOM.wsCtrl.price.textContent = `${totalPrice} ₺`;
+        const updateBtnStates = (container, selectedId) => { Array.from(container.children).forEach(btn => { const isActive = btn.style.background === st.color.hex || btn.innerHTML.includes(selectedId); btn.classList.toggle('active', isActive); }); }
+        updateBtnStates(DOM.wsCtrl.colors, st.color.id); updateBtnStates(DOM.wsCtrl.emitters, st.emitter.name); updateBtnStates(DOM.wsCtrl.switches, st.switchPart.name); updateBtnStates(DOM.wsCtrl.grips, st.grip.name); updateBtnStates(DOM.wsCtrl.pommels, st.pommel.name);
+        DOM.saber.container.classList.toggle('active', st.isSaberOn); DOM.wsCtrl.testBtn.textContent = st.isSaberOn ? "Kılıcı Kapat" : "Kılıcı Test Et (Aç)"; DOM.wsCtrl.testBtn.style.background = st.isSaberOn ? "#c0392b" : "#333";
+    }
+
+    DOM.wsCtrl.addBtn.addEventListener('click', () => {
+        const st = appState.workshop; const total = st.color.price + st.emitter.price + st.switchPart.price + st.grip.price + st.pommel.price;
+        appState.cart.push({ id: Date.now(), config: { ...st }, total: total });
+        DOM.navCartCount.textContent = appState.cart.length; DOM.wsCtrl.addBtn.innerHTML = "✅ Eklendi!"; setTimeout(() => DOM.wsCtrl.addBtn.innerHTML = "🛒 Sepete Ekle", 1000);
+    });
+
+    function renderCartPage() {
+        DOM.cart.list.innerHTML = ''; let grandTotal = 0;
+        if (appState.cart.length === 0) { DOM.cart.list.innerHTML = '<tr><td colspan="3" class="empty-msg">Sepetiniz boş.</td></tr>'; DOM.cart.summary.classList.add('hidden'); return; }
+        DOM.cart.summary.classList.remove('hidden');
+        appState.cart.forEach(item => { grandTotal += item.total; DOM.cart.list.innerHTML += `<tr><td><strong>Özel Tasarım Işın Kılıcı</strong><br><span style="font-size:0.85rem; color:#aaa;">${item.config.color.name} Kristal, ${item.config.emitter.name}, ${item.config.grip.name}...</span></td><td style="font-weight:bold;">${item.total} ₺</td><td><button class="delete-item-btn" onclick="removeFromCart(${item.id})">Sil</button></td></tr>`; });
+        DOM.cart.total.textContent = `${grandTotal} ₺`;
+    }
+    window.removeFromCart = (id) => { appState.cart = appState.cart.filter(i => i.id !== id); DOM.navCartCount.textContent = appState.cart.length; renderCartPage(); };
+
+    /* --- SUNUCU İLETİŞİMİ --- */
+    async function submitOrderToServer() {
+        if(appState.cart.length === 0) return alert("Sepet boş!");
+        const email = DOM.cart.emailInput.value.trim();
+        if(!email || !email.includes('@')) return alert("Lütfen geçerli bir e-posta adresi girin.");
+
+        const orderData = { customerEmail: email, items: appState.cart, grandTotal: parseInt(DOM.cart.total.textContent) };
+
+        try {
+            const response = await fetch(`${API_URL}/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+            const result = await response.json();
+            if(result.success) {
+                alert(`Siparişiniz Alındı!\nSipariş No: ${result.orderID}\nDurum: Hazırlanıyor`);
+                appState.cart = []; DOM.navCartCount.textContent = 0; renderCartPage(); DOM.cart.emailInput.value = '';
+                // Siparişten sonra bildirim ekranına yönlendir
+                DOM.notif.emailInput.value = email;
+                navigateTo('notifications');
+                fetchUserNotifications();
+            }
+        } catch (error) { alert("Sunucu bağlantı hatası!"); }
+    }
+
+    function checkAdminAccess() { if(authToken) { navigateTo('admin'); fetchAdminOrders(); } else { navigateTo('login'); } }
+
+    async function loginToServer() {
+        const email = DOM.login.email.value; const password = DOM.login.pass.value;
+        DOM.login.msg.textContent = "Bağlanılıyor..."; DOM.login.msg.className = 'login-msg';
+        try {
+            const response = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            const result = await response.json();
+            if(result.success) {
+                authToken = result.token; localStorage.setItem('adminToken', authToken);
+                DOM.login.msg.textContent = result.message; DOM.login.msg.classList.add('success');
+                setTimeout(() => { checkAdminAccess(); DOM.login.msg.textContent = '';DOM.login.pass.value=''; }, 1000);
+            } else { DOM.login.msg.textContent = result.message; DOM.login.msg.classList.add('error'); }
+        } catch (error) { DOM.login.msg.textContent = "Sunucu hatası!"; DOM.login.msg.classList.add('error'); }
+    }
+
+    // --- GÜNCELLENMİŞ ADMİN PANELİ FONKSİYONLARI ---
+    async function fetchAdminOrders() {
+        if(!authToken) return navigateTo('login');
+        DOM.admin.list.innerHTML = '<tr><td colspan="4" class="empty-msg">Veri çekiliyor...</td></tr>';
+        try {
+            const response = await fetch(`${API_URL}/admin/orders`, { headers: { 'Authorization': authToken } });
+            if(response.status === 403) { authToken = null; localStorage.removeItem('adminToken'); return navigateTo('login'); }
+            const orders = await response.json();
+            DOM.admin.list.innerHTML = '';
+            if(orders.length === 0) { DOM.admin.list.innerHTML = '<tr><td colspan="4" class="empty-msg">Henüz sipariş yok.</td></tr>'; return; }
+
+            orders.forEach(order => {
+                let detailsHtml = '<ul style="font-size:0.85rem; padding-left:15px; margin:0;">';
+                order.items.forEach(item => { const c = item.config; detailsHtml += `<li>${c.color.name}, ${c.emitter.name}...</li>`; }); detailsHtml += '</ul>';
+                
+                // Duruma göre etiket rengi belirle
+                let statusClass = 'status-hazirlaniyor';
+                if(order.status === 'Teslim Edildi') statusClass = 'status-teslim';
+                if(order.status === 'İptal Edildi') statusClass = 'status-iptal';
+                if(order.status === 'Gecikme Yaşanıyor') statusClass = 'status-gecikme';
+
+                DOM.admin.list.innerHTML += `
+                    <tr>
+                        <td><strong>${order.serverID}</strong><br><span style="font-size:0.8rem">${order.serverDate}</span><br>${order.customerEmail}</td>
+                        <td>${detailsHtml}</td>
+                        <td>
+                            <div style="font-weight:bold;">${order.grandTotal} ₺</div>
+                            <span class="status-badge ${statusClass}">${order.status}</span>
+                        </td>
+                        <td class="admin-actions-cell">
+                            <button class="admin-action-btn btn-teslim" onclick="updateOrderStatus('${order.serverID}', 'Teslim Edildi')">Teslim</button>
+                            <button class="admin-action-btn btn-iptal" onclick="updateOrderStatus('${order.serverID}', 'İptal Edildi')">İptal</button>
+                            <button class="admin-action-btn btn-gecikme" onclick="updateOrderStatus('${order.serverID}', 'Gecikme Yaşanıyor')">Gecikme</button>
+                        </td>
+                    </tr>`;
+            });
+        } catch (error) { DOM.admin.list.innerHTML = '<tr><td colspan="4" class="empty-msg error">Hata oluştu!</td></tr>'; }
+    }
+
+    // YENİ: SİPARİŞ DURUMU GÜNCELLEME (Admin)
+    async function updateOrderStatus(orderId, newStatus) {
+        if(!confirm(`Sipariş ${orderId} durumu "${newStatus}" olarak değiştirilecek. Emin misiniz?`)) return;
+        try {
+            const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': authToken },
+                body: JSON.stringify({ newStatus })
+            });
+            if(response.ok) {
+                fetchAdminOrders(); // Listeyi yenile
+            } else { alert("Güncelleme başarısız!"); }
+        } catch(e) { alert("Sunucu hatası!"); }
+    }
+
+    // --- YENİ: KULLANICI BİLDİRİMLERİ FONKSİYONU ---
+    async function fetchUserNotifications() {
+        const email = DOM.notif.emailInput.value.trim();
+        if(!email) return alert("Lütfen e-posta girin.");
+
+        DOM.notif.list.innerHTML = '<tr><td colspan="3" class="empty-msg">Sorgulanıyor...</td></tr>';
+        try {
+            const response = await fetch(`${API_URL}/user/orders/${email}`);
+            const orders = await response.json();
+            
+            DOM.notif.list.innerHTML = '';
+            if(orders.length === 0) {
+                 DOM.notif.list.innerHTML = '<tr><td colspan="3" class="empty-msg">Bu e-posta ile kayıtlı sipariş bulunamadı.</td></tr>';
+                 return;
+            }
+
+            orders.forEach(order => {
+                // Duruma göre etiket rengi belirle
+                let statusClass = 'status-hazirlaniyor';
+                if(order.status === 'Teslim Edildi') statusClass = 'status-teslim';
+                if(order.status === 'İptal Edildi') statusClass = 'status-iptal';
+                if(order.status === 'Gecikme Yaşanıyor') statusClass = 'status-gecikme';
+
+                DOM.notif.list.innerHTML += `
+                    <tr>
+                        <td><strong>${order.serverID}</strong><br><span style="font-size:0.8rem">${order.serverDate}</span></td>
+                        <td>${order.items.length} Parça Işın Kılıcı<br>Toplam: ${order.grandTotal} ₺</td>
+                        <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                    </tr>
+                `;
+            });
+
+        } catch (error) {
+            DOM.notif.list.innerHTML = '<tr><td colspan="3" class="empty-msg error">Sunucu hatası!</td></tr>';
+        }
+    }
+
+    DOM.wsCtrl.testBtn.addEventListener('click', () => { appState.workshop.isSaberOn = !appState.workshop.isSaberOn; updateWorkshop(); });
+    initWorkshopUI(); navigateTo('home');
+</script>
+</body>
+</html>
