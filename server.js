@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 10000;
 
 // Middleware'ler
 app.use(cors()); // Farklı adreslerden (GitHub Pages) gelen isteklere izin ver
-app.use(bodyParser.json()); // Gelen JSON verilerini okuyabil
+app.use(bodyParser.json()); // Gelen JSON verilerini okuyab
 
 // --- SİMÜLE EDİLMİŞ VERİTABANI (Geçici Hafıza) ---
 // Not: Sunucu yeniden başladığında burası sıfırlanır.
@@ -115,6 +115,7 @@ app.listen(PORT, () => {
     console.log(`cloud environment: ${process.env.PORT ? 'EVET (Render)' : 'HAYIR (Yerel)'}`);
     console.log(`==========================================`);
 });
+
 
 
 
