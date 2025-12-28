@@ -10,7 +10,7 @@ const app = express();
 
 // RENDER İÇİN KRİTİK AYAR:
 // Render'ın atadığı portu kullan, yoksa 3000'i kullan.
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8888;
 
 // Middleware'ler
 app.use(cors()); // Farklı adreslerden (GitHub Pages) gelen isteklere izin ver
@@ -115,3 +115,4 @@ app.listen(PORT, () => {
     console.log(`cloud environment: ${process.env.PORT ? 'EVET (Render)' : 'HAYIR (Yerel)'}`);
     console.log(`==========================================`);
 });
+
