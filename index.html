@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaktik Silah Atölyesi - Final Sistem v2</title>
+    <title>Galaktik Silah Atölyesi - Final Sistem v2.1</title>
     <style>
         /* --- CSS Kodları (Değişiklik Yok, Aynen Korundu) --- */
         :root { --bg-dark: #0a0a0f; --bg-panel: #14141c; --text-light: #e0e0e0; --accent-gold: #c7a008; --nav-height: 60px; --blade-color: #0088ff; }
@@ -146,8 +146,9 @@
 
 <section id="home-view" class="view-section active-view">
     <div class="hero-banner">
-        <img src="image_8.png" alt="Galaktik Silah" class="corner-ad ad-tl">
-        <img src="image_8.png" alt="Yeni Sezon Kılıç" class="corner-ad ad-br">
+        <img src="https://picsum.photos/id/103/500/300" alt="Galaktik Silah" class="corner-ad ad-tl">
+
+        <img src="https://picsum.photos/id/104/500/300" alt="Yeni Sezon Kılıç" class="corner-ad ad-br">
         <h1 class="hero-title">Gerçek Gücü Hisset</h1>
         <p class="hero-subtitle">Siparişleriniz artık doğrudan galaktik sunucularımıza iletiliyor. Efsaneni yarat ve savaşa katıl.</p>
         <button class="cta-btn" onclick="navigateTo('workshop')">Atölyeye Gir</button>
@@ -242,13 +243,13 @@
 </section>
 
 <footer class="site-footer">
-    <p>&copy; 2023 Galaktik Silah Atölyesi. Final Sistem v2.</p>
+    <p>&copy; 2023 Galaktik Silah Atölyesi. Final Sistem v2.1</p>
     <span class="admin-link" onclick="checkAdminAccess()">Yönetici Girişi</span>
 </footer>
 
 <script>
     // YENİ: DOĞRU CANLI SUNUCU ADRESİ (Burası kesinlikle böyle kalmalı)
-    const API_URL = "https://galaktikk.onrender.com/api";
+    const API_URL = "http://localhost:3000/api";
     let authToken = localStorage.getItem('adminToken');
 
     const partsData = {
